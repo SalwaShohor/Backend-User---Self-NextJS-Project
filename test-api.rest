@@ -1,0 +1,78 @@
+#update
+PUT http://localhost:4001/auth/users/1
+Content-Type: application/json
+
+{
+  "currentChallenge": "X9DzpZ2qOqZ4HhM8rj7Z5pZzF0u76uDeT28jC0sR8xA"
+}
+
+
+
+
+#login
+POST http://localhost:4001/auth/login-options
+Content-Type: application/json
+
+{
+  "email": "ginnyweasley@example.com",
+  "password": "ginny123"
+}
+
+
+
+### Test WebAuthn Register Options
+POST http://localhost:4001/auth/register-options
+Content-Type: application/json
+
+{
+  "full_name": "James Potter",
+  "email": "jamespotter@example3.com",
+  "password": "secret123",
+  "role": "user"
+}
+
+### Step 2: Verify Registration
+POST http://localhost:4001/auth/register-verify
+Content-Type: application/json
+
+{
+  "email": "harrypotter@gmail.com",
+  "id": "test-credential-id",
+  "rawId": "dGVzdC1jcmVkZW50aWFsLWlk",
+  "type": "public-key",
+  "response": {
+    "clientDataJSON": "dGVzdC1jbGllbnQtZGF0YQ==",
+    "attestationObject": "dGVzdC1hdHRlc3RhdGlvbg=="
+  }
+}
+
+
+
+### Test register-verify with mock data
+POST http://localhost:4001/auth/register-verify
+Content-Type: application/json
+
+{
+  "username": "alice@example.com",
+  "attResp": {
+    "id": "dummy-credential-id",
+    "rawId": "dummy-rawid",
+    "type": "public-key",
+    "response": {
+      "clientDataJSON": "dummy-client-data",
+      "attestationObject": "dummy-attestation-object"
+    }
+  }
+}
+
+
+
+
+### Test delete user
+DELETE http://localhost:4002/target/delete-by-ic/1234567890
+
+### Get All User
+GET http://localhost:4001/auth/all-users
+
+
+
