@@ -1,0 +1,42 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model credentials {
+  id           Int    @id @default(autoincrement())
+  credentialID String @db.VarChar(255)
+  publicKey    String @db.Text
+  counter      Int?   @default(0)
+  user_id      Int?
+
+  users users? @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "credentials_ibfk_1")
+
+  @@index([user_id], map: "user_id")
+}
+
+model target {
+  id              Int       @id @default(autoincrement())
+  ic_number       String    @unique(map: "ic_number") @db.VarChar(20)
+  full_name       String    @db.VarChar(100)
+  age             Int?
+  birth_date      DateTime? @db.Date
+  current_address String?   @db.Text
+}
+
+model users {
+  id         Int       @id @default(autoincrement())
+  full_name  String    @db.VarChar(100)
+  email      String    @unique(map: "email") @db.VarChar(100)
+  password   String    @db.VarChar(255)
+  role       String?   @default("user") @db.VarChar(50)
+  created_at DateTime? @default(now()) @db.Timestamp(0)
+  updated_at DateTime? @default(now()) @db.Timestamp(0)
+
+  credentials credentials[]
+}
