@@ -15,8 +15,6 @@ build-and-push:
   script:
     - docker login -u "$DOCKERHUB_USERNAME" -p "$DOCKERHUB_PASSWORD"
     - docker build -t $IMAGE_NAME:latest .
-    - docker run --rm $IMAGE_NAME:latest npx prisma generate   
-    - docker commit $(docker ps -alq) $IMAGE_NAME:latest      
     - docker push $IMAGE_NAME:latest
   only:
     - main
