@@ -10,6 +10,8 @@ RUN npm install
 # Copy rest of app
 COPY . .
 
+RUN npx prisma generate
+
 EXPOSE 4001
 
 # Default command (can be overridden in docker-compose)
