@@ -10,6 +10,7 @@ RUN npm install
 # Copy rest of app
 COPY . .
 
+RUN npx prisma generate
 
 EXPOSE 4001
 
