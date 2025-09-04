@@ -13,8 +13,11 @@ import { fromBase64url } from "../utils/base64.js";
 const prisma = new PrismaClient();
 
 const rpName = "Next App";
-const rpID = "localhost"; // relying party ID must match domain
-const origin = `http://${rpID}:3000`;
+// const rpID = "localhost"; // relying party ID must match domain
+// const origin = `http://${rpID}:3000`;
+
+const rpID = process.env.WEBAUTHN_RPID;
+const origin = process.env.WEBAUTHN_ORIGIN;
 
 // A helper function to convert Buffer to Base64URL string
 const toBase64url = (buf) => {
