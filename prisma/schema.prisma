@@ -3,38 +3,77 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
+
 model credentials {
   id           Int    @id @default(autoincrement())
-  credentialID String @db.VarChar(255)
-  publicKey    String @db.Text
+  credentialID String
+  publicKey    String
   counter      Int?   @default(0)
   user_id      Int?
-  users        users? @relation("UserCredentials", fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "credentials_ibfk_1")
+  users        users? @relation("UserCredentials", fields: [user_id], references: [id], onDelete: Cascade)
 
-  @@index([user_id], map: "user_id")
+  @@index([user_id])
 }
 
 model users {
-  id                   Int           @id @default(autoincrement())
-  full_name            String        @db.VarChar(100)
-  email                String        @unique(map: "email") @db.VarChar(100)
-  password             String        @db.VarChar(255)
-  role                 String?       @default("user") @db.VarChar(50)
-  currentChallenge     String?        @map("current_challenge") 
-  created_at           DateTime?     @default(now()) @db.Timestamp(0)
-  updated_at           DateTime?     @default(now()) @updatedAt @db.Timestamp(0)
-  credentials credentials[] @relation("UserCredentials")
+  id               Int           @id @default(autoincrement())
+  full_name        String
+  email            String        @unique
+  password         String
+  role             String?       @default("user")
+  currentChallenge String?       @map("current_challenge")
+  created_at       DateTime?     @default(now())
+  updated_at       DateTime?     @updatedAt
+  credentials      credentials[] @relation("UserCredentials")
 }
 
 model target {
   id              Int       @id @default(autoincrement())
-  ic_number       String    @unique(map: "ic_number") @db.VarChar(20)
-  full_name       String    @db.VarChar(100)
+  ic_number       String    @unique
+  full_name       String
   age             Int?
-  birth_date      DateTime? @db.Date
-  current_address String?   @db.Text
+  birth_date      DateTime?
+  current_address String?
 }
+
+// datasource db {
+//   provider = "mysql"
+//   url      = env("DATABASE_URL")
+// }
+
+// model credentials {
+//   id           Int    @id @default(autoincrement())
+//   credentialID String @db.VarChar(255)
+//   publicKey    String @db.Text
+//   counter      Int?   @default(0)
+//   user_id      Int?
+//   users        users? @relation("UserCredentials", fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "credentials_ibfk_1")
+
+//   @@index([user_id], map: "user_id")
+// }
+
+// model users {
+//   id                   Int           @id @default(autoincrement())
+//   full_name            String        @db.VarChar(100)
+//   email                String        @unique(map: "email") @db.VarChar(100)
+//   password             String        @db.VarChar(255)
+//   role                 String?       @default("user") @db.VarChar(50)
+//   currentChallenge     String?        @map("current_challenge") 
+//   created_at           DateTime?     @default(now()) @db.Timestamp(0)
+//   updated_at           DateTime?     @default(now()) @updatedAt @db.Timestamp(0)
+//   credentials credentials[] @relation("UserCredentials")
+// }
+
+// model target {
+//   id              Int       @id @default(autoincrement())
+//   ic_number       String    @unique(map: "ic_number") @db.VarChar(20)
+//   full_name       String    @db.VarChar(100)
+//   age             Int?
+//   birth_date      DateTime? @db.Date
+//   current_address String?   @db.Text
+// }
+
