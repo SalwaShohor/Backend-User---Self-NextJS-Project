@@ -50,9 +50,7 @@ export async function generateAndStoreRegisterOptions(user) {
       { alg: -257, type: "public-key" }, // RS256
     ],
     timeout: 60000,
-    attestation: "direct",
-    authenticatorAttachment: "cross-platform",
-    // ✅ ADDED: These options align with webauthn.io for discoverable credentials
+    attestation: "none", // simpler + better cross-device support
     authenticatorSelection: {
       residentKey: "preferred",
       requireResidentKey: false,
@@ -60,6 +58,7 @@ export async function generateAndStoreRegisterOptions(user) {
     },
   };
 }
+
 
 /**
  * Verify Registration Response
@@ -83,12 +82,14 @@ export async function verifyRegisterResponse(user, attestationResponse) {
     throw new Error("Registration verification failed");
   }
 
-  const { id, publicKey, counter } = verification.registrationInfo.credential;
+  const { credential } = verification.registrationInfo;
+  const { id, publicKey, counter } = credential;
 
+  // Store as Base64URL
   await addCredential(
     user.id,
-    Buffer.from(id).toString("base64url"),
-    Buffer.from(publicKey).toString("base64url"),
+    id, // already base64url string from @simplewebauthn
+    publicKey.toString("base64url"),
     counter
   );
 
@@ -96,6 +97,7 @@ export async function verifyRegisterResponse(user, attestationResponse) {
 
   return true;
 }
+
 
 /**
  * Generate Authentication Options (Login)
@@ -109,10 +111,9 @@ export async function generateAndStoreLoginOptions(user) {
   return {
     challenge: challengeStr,
     allowCredentials: user.credentials.map((c) => ({
-      id: toBase64url(c.credentialID), // MUST be a base64url string
+      id: c.credentialID, // already stored as base64url → don’t re-encode
       type: "public-key",
     })),
-
     timeout: 60000,
     rpId: rpID,
     userVerification: "preferred",
