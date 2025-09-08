@@ -8,7 +8,7 @@ import { PrismaClient } from "@prisma/client";
 
 import { updateUser, updateUserChallenge } from "../models/users.js";
 import { addCredential } from "../models/credential.js";
-import { fromBase64url } from "../utils/base64.js";
+import { fromBase64url, toBase64url } from "../utils/base64.js";
 
 const prisma = new PrismaClient();
 
@@ -89,7 +89,13 @@ export async function verifyRegisterResponse(user, attestationResponse) {
   await addCredential(
     user.id,
     id, // already base64url string from @simplewebauthn
-    publicKey.toString("base64url"),
+    // publicKey.toString("base64url"),
+    await addCredential(
+      user.id,
+      id, // already base64url from @simplewebauthn
+      toBase64url(publicKey), // ✅ convert Buffer → Base64URL correctly
+      counter
+    );
     counter
   );
 
@@ -143,14 +149,25 @@ export async function verifyLoginResponse(user, loginResp) {
   }
 
   // Verify with @simplewebauthn/server
+  // const verification = await verifyAuthenticationResponse({
+  //   response: loginResp,
+  //   expectedChallenge,
+  //   expectedOrigin: origin,
+  //   expectedRPID: rpID,
+  //   authenticator: {
+  //     credentialID: fromBase64url(dbCred.credentialID),
+  //     credentialPublicKey: fromBase64url(dbCred.publicKey),
+  //     counter: dbCred.counter ?? 0,
+  //   },
+  // });
   const verification = await verifyAuthenticationResponse({
     response: loginResp,
     expectedChallenge,
     expectedOrigin: origin,
     expectedRPID: rpID,
     authenticator: {
-      credentialID: fromBase64url(dbCred.credentialID),
-      credentialPublicKey: fromBase64url(dbCred.publicKey),
+      credentialID: base64url.toBuffer(dbCred.credentialID),
+      credentialPublicKey: base64url.toBuffer(dbCred.publicKey),
       counter: dbCred.counter ?? 0,
     },
   });
