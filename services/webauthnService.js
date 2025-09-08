@@ -85,12 +85,11 @@ export async function verifyRegisterResponse(user, attestationResponse) {
   const { credential } = verification.registrationInfo;
   const { id, publicKey, counter } = credential;
 
-  // Store as Base64URL
+  // Store as Base64URL — ensure addCredential signature matches (userId, credentialID, publicKey, counter)
   await addCredential(
     user.id,
     id, // already base64url string from @simplewebauthn
-    // publicKey.toString("base64url"),
-    toBase64url(publicKey), // ✅ convert Buffer → Base64URL correctly
+    toBase64url(publicKey), // convert Buffer -> base64url
     counter
   );
 
@@ -98,6 +97,7 @@ export async function verifyRegisterResponse(user, attestationResponse) {
 
   return true;
 }
+
 
 
 /**
@@ -143,37 +143,34 @@ export async function verifyLoginResponse(user, loginResp) {
     throw new Error("Authenticator not registered");
   }
 
-  // Verify with @simplewebauthn/server
-  // const verification = await verifyAuthenticationResponse({
-  //   response: loginResp,
-  //   expectedChallenge,
-  //   expectedOrigin: origin,
-  //   expectedRPID: rpID,
-  //   authenticator: {
-  //     credentialID: fromBase64url(dbCred.credentialID),
-  //     credentialPublicKey: fromBase64url(dbCred.publicKey),
-  //     counter: dbCred.counter ?? 0,
-  //   },
-  // });
-  const verification = await verifyAuthenticationResponse({
-    response: loginResp,
-    expectedChallenge,
-    expectedOrigin: origin,
-    expectedRPID: rpID,
-    authenticator: {
-      credentialID: base64url.toBuffer(dbCred.credentialID),
-      credentialPublicKey: base64url.toBuffer(dbCred.publicKey),
-      counter: dbCred.counter ?? 0,
-    },
-  });
-
-  if (verification.verified) {
-    await prisma.credentials.update({
-      where: { id: dbCred.id },
-      data: { counter: verification.authenticationInfo.newCounter },
+  try {
+    const verification = await verifyAuthenticationResponse({
+      response: loginResp,
+      expectedChallenge,
+      expectedOrigin: origin,
+      expectedRPID: rpID,
+      authenticator: {
+        // decode Base64URL back into buffers using your helper
+        credentialID: fromBase64url(dbCred.credentialID),
+        credentialPublicKey: fromBase64url(dbCred.publicKey),
+        counter: dbCred.counter ?? 0,
+      },
     });
-    await updateUserChallenge(user.email, null);
-  }
 
-  return verification.verified;
+    if (verification.verified) {
+      await prisma.credentials.update({
+        where: { id: dbCred.id },
+        data: { counter: verification.authenticationInfo.newCounter },
+      });
+      await updateUserChallenge(user.email, null);
+    } else {
+      console.warn("Authentication verification returned verified=false", verification);
+    }
+
+    return verification.verified;
+  } catch (err) {
+    // Log the exact error (very helpful for debugging signature/format issues)
+    console.error("Error during verifyAuthenticationResponse:", err);
+    throw new Error("Failed to verify login");
+  }
 }
