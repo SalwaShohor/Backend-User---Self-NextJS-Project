@@ -1,6 +1,0 @@
-node_modules
-npm-debug.log
-pnpm-lock.yaml
-yarn-error.log
-.DS_Store
-.env
