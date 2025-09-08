@@ -124,53 +124,92 @@ export async function generateAndStoreLoginOptions(user) {
 /**
  * Verify Authentication Response (Login)
  */
+// export async function verifyLoginResponse(user, loginResp) {
+//   const expectedChallenge = user.currentChallenge;
+//   if (!expectedChallenge) {
+//     throw new Error("A challenge was not found. Please try logging in again.");
+//   }
+
+//   // Match credential by Base64URL string ID
+//   const dbCred = user.credentials.find((c) => c.credentialID === loginResp.id);
+
+//   if (!dbCred) {
+//     console.error("❌ No matching credential found.");
+//     console.error("Client sent:", loginResp.id);
+//     console.error(
+//       "Stored:",
+//       user.credentials.map((c) => c.credentialID)
+//     );
+//     throw new Error("Authenticator not registered");
+//   }
+
+//   try {
+//     const verification = await verifyAuthenticationResponse({
+//       response: loginResp,
+//       expectedChallenge,
+//       expectedOrigin: origin,
+//       expectedRPID: rpID,
+//       authenticator: {
+//         // decode Base64URL back into buffers using your helper
+//         credentialID: fromBase64url(dbCred.credentialID),
+//         credentialPublicKey: fromBase64url(dbCred.publicKey),
+//         counter: dbCred.counter ?? 0,
+//       },
+//     });
+
+//     if (verification.verified) {
+//       await prisma.credentials.update({
+//         where: { id: dbCred.id },
+//         data: { counter: verification.authenticationInfo.newCounter },
+//       });
+//       await updateUserChallenge(user.email, null);
+//     } else {
+//       console.warn("Authentication verification returned verified=false", verification);
+//     }
+
+//     return verification.verified;
+//   } catch (err) {
+//     // Log the exact error (very helpful for debugging signature/format issues)
+//     console.error("Error during verifyAuthenticationResponse:", err);
+//     throw new Error("Failed to verify login");
+//   }
+// }
 export async function verifyLoginResponse(user, loginResp) {
   const expectedChallenge = user.currentChallenge;
   if (!expectedChallenge) {
     throw new Error("A challenge was not found. Please try logging in again.");
   }
 
-  // Match credential by Base64URL string ID
+  // 🔎 Find matching credential by ID
   const dbCred = user.credentials.find((c) => c.credentialID === loginResp.id);
 
   if (!dbCred) {
     console.error("❌ No matching credential found.");
     console.error("Client sent:", loginResp.id);
-    console.error(
-      "Stored:",
-      user.credentials.map((c) => c.credentialID)
-    );
+    console.error("Stored:", user.credentials.map((c) => c.credentialID));
     throw new Error("Authenticator not registered");
   }
 
-  try {
-    const verification = await verifyAuthenticationResponse({
-      response: loginResp,
-      expectedChallenge,
-      expectedOrigin: origin,
-      expectedRPID: rpID,
-      authenticator: {
-        // decode Base64URL back into buffers using your helper
-        credentialID: fromBase64url(dbCred.credentialID),
-        credentialPublicKey: fromBase64url(dbCred.publicKey),
-        counter: dbCred.counter ?? 0,
-      },
-    });
+  // ✅ Verify authentication response
+  const verification = await verifyAuthenticationResponse({
+    response: loginResp,
+    expectedChallenge,
+    expectedOrigin: process.env.WEBAUTHN_ORIGIN,
+    expectedRPID: process.env.WEBAUTHN_RPID,
+    authenticator: {
+      credentialID: fromBase64url(dbCred.credentialID),
+      credentialPublicKey: fromBase64url(dbCred.publicKey),
+      counter: dbCred.counter ?? 0,
+    },
+  });
 
-    if (verification.verified) {
-      await prisma.credentials.update({
-        where: { id: dbCred.id },
-        data: { counter: verification.authenticationInfo.newCounter },
-      });
-      await updateUserChallenge(user.email, null);
-    } else {
-      console.warn("Authentication verification returned verified=false", verification);
-    }
-
-    return verification.verified;
-  } catch (err) {
-    // Log the exact error (very helpful for debugging signature/format issues)
-    console.error("Error during verifyAuthenticationResponse:", err);
-    throw new Error("Failed to verify login");
+  if (verification.verified) {
+    await updateCredentialCounter(
+      dbCred.credentialID,
+      verification.authenticationInfo.newCounter,
+    );
+    await updateUserChallenge(user.email, null);
   }
+
+  return verification.verified;
 }
