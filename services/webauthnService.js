@@ -8,7 +8,7 @@ import { PrismaClient } from "@prisma/client";
 
 import { updateUser, updateUserChallenge } from "../models/users.js";
 import { addCredential } from "../models/credential.js";
-import { fromBase64url, toBase64url } from "../utils/base64.js";
+import { fromBase64url } from "../utils/base64.js";
 
 const prisma = new PrismaClient();
 
