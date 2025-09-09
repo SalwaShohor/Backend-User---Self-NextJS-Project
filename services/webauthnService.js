@@ -139,7 +139,6 @@ export async function verifyLoginResponse(user, loginResp) {
     throw new Error("A challenge was not found. Please try logging in again.");
   }
 
-  // 🔎 Find matching credential by ID
   const dbCred = user.credentials.find((c) => c.credentialID === loginResp.id);
 
   if (!dbCred) {
@@ -153,16 +152,16 @@ export async function verifyLoginResponse(user, loginResp) {
   }
 
   try {
-    // ✅ Verify authentication response
     const verification = await verifyAuthenticationResponse({
       response: loginResp,
       expectedChallenge,
       expectedOrigin: process.env.WEBAUTHN_ORIGIN,
       expectedRPID: process.env.WEBAUTHN_RPID,
       authenticator: {
-        // base64url.toBuffer(dbCred.credentialID);
-        credentialID: base64url.toBuffer(dbCred.credentialID), // 🔑 match client
-        credentialPublicKey: base64url.toBuffer(dbCred.publicKey),
+        credentialID: base64url.encode(dbCred.credentialID),
+        // credentialID: fromBase64url(dbCred.credentialID), // ✅ fix here
+        // credentialPublicKey: fromBase64url(dbCred.publicKey),
+        credentialPublicKey: base64url.encode(dbCred.publicKey),
         counter: dbCred.counter ?? 0,
       },
     });
@@ -170,7 +169,6 @@ export async function verifyLoginResponse(user, loginResp) {
     console.log("✅ Verification result:", verification);
 
     if (verification.verified) {
-      console.log("Updating counter for credential:", dbCred.credentialID);
       await updateCredentialCounter(
         dbCred.credentialID,
         verification.authenticationInfo.newCounter
