@@ -43,8 +43,8 @@ export async function addCredential(
   return await prisma.credentials.create({
     data: {
       credentialID,
-      // publicKey: toBase64url(publicKey), // 🐛 Fix is here!
-      publicKey,
+      publicKey: toBase64url(publicKey), // 🐛 Fix is here!
+      // publicKey,
       counter,
       user_id: userId,
     },
