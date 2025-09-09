@@ -25,7 +25,7 @@ const origin = process.env.WEBAUTHN_ORIGIN;
 // };
 const toBase64url = (buf) => {
   return buf
-    .toString("base64")
+    .toString("base64url")
     .replace(/\+/g, "-")
     .replace(/\//g, "_")
     .replace(/=/g, "");
