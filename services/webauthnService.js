@@ -132,6 +132,60 @@ export async function generateAndStoreLoginOptions(user) {
 /**
  * Verify Authentication Response (Login)
  */
+
+export async function verifyLoginResponse(user, loginResp) {
+  const expectedChallenge = user.currentChallenge;
+  if (!expectedChallenge) {
+    throw new Error("A challenge was not found. Please try logging in again.");
+  }
+
+  // 🔎 Find matching credential by ID
+  const dbCred = user.credentials.find((c) => c.credentialID === loginResp.id);
+
+  if (!dbCred) {
+    console.error("❌ No matching credential found.");
+    console.error("Client sent:", loginResp.id);
+    console.error(
+      "Stored credentials:",
+      user.credentials.map((c) => c.credentialID)
+    );
+    throw new Error("Authenticator not registered");
+  }
+
+  try {
+    // ✅ Verify authentication response
+    const verification = await verifyAuthenticationResponse({
+      response: loginResp,
+      expectedChallenge,
+      expectedOrigin: process.env.WEBAUTHN_ORIGIN,
+      expectedRPID: process.env.WEBAUTHN_RPID,
+      authenticator: {
+        credentialID: fromBase64url(loginResp.rawId), // 🔑 match client
+        credentialPublicKey: fromBase64url(dbCred.publicKey),
+        counter: dbCred.counter ?? 0,
+      },
+    });
+
+    console.log("✅ Verification result:", verification);
+
+    if (verification.verified) {
+      console.log("Updating counter for credential:", dbCred.credentialID);
+      await updateCredentialCounter(
+        dbCred.credentialID,
+        verification.authenticationInfo.newCounter
+      );
+      await updateUserChallenge(user.email, null);
+    } else {
+      console.warn("⚠️ Verification failed:", verification);
+    }
+
+    return verification.verified;
+  } catch (err) {
+    console.error("❌ verifyLoginResponse failed:", err);
+    throw new Error("Failed to verify login");
+  }
+}
+
 // export async function verifyLoginResponse(user, loginResp) {
 //   const expectedChallenge = user.currentChallenge;
 //   if (!expectedChallenge) {
@@ -182,51 +236,51 @@ export async function generateAndStoreLoginOptions(user) {
 //     throw new Error("Failed to verify login");
 //   }
 // }
-export async function verifyLoginResponse(user, loginResp) {
-  const expectedChallenge = user.currentChallenge;
-  if (!expectedChallenge) {
-    throw new Error("A challenge was not found. Please try logging in again.");
-  }
+// export async function verifyLoginResponse(user, loginResp) {
+//   const expectedChallenge = user.currentChallenge;
+//   if (!expectedChallenge) {
+//     throw new Error("A challenge was not found. Please try logging in again.");
+//   }
 
-  // 🔎 Find matching credential by ID
-  const dbCred = user.credentials.find((c) => c.credentialID === loginResp.id);
+//   // 🔎 Find matching credential by ID
+//   const dbCred = user.credentials.find((c) => c.credentialID === loginResp.id);
 
-  if (!dbCred) {
-    console.error("❌ No matching credential found.");
-    console.error("Client sent:", loginResp.id);
-    console.error(
-      "Stored:",
-      user.credentials.map((c) => c.credentialID)
-    );
-    throw new Error("Authenticator not registered");
-  }
+//   if (!dbCred) {
+//     console.error("❌ No matching credential found.");
+//     console.error("Client sent:", loginResp.id);
+//     console.error(
+//       "Stored:",
+//       user.credentials.map((c) => c.credentialID)
+//     );
+//     throw new Error("Authenticator not registered");
+//   }
 
-  // ✅ Verify authentication response
-  const verification = await verifyAuthenticationResponse({
-    response: loginResp,
-    expectedChallenge,
-    expectedOrigin: process.env.WEBAUTHN_ORIGIN,
-    expectedRPID: process.env.WEBAUTHN_RPID,
-    authenticator: {
-      credentialID: fromBase64url(loginResp.rawId), // 🔑 ensure matches client
-      credentialPublicKey: fromBase64url(dbCred.publicKey),
-      counter: dbCred.counter ?? 0,
-    },
+//   // ✅ Verify authentication response
+//   const verification = await verifyAuthenticationResponse({
+//     response: loginResp,
+//     expectedChallenge,
+//     expectedOrigin: process.env.WEBAUTHN_ORIGIN,
+//     expectedRPID: process.env.WEBAUTHN_RPID,
+//     authenticator: {
+//       credentialID: fromBase64url(loginResp.rawId), // 🔑 ensure matches client
+//       credentialPublicKey: fromBase64url(dbCred.publicKey),
+//       counter: dbCred.counter ?? 0,
+//     },
 
-    // authenticator: {
-    //   credentialID: fromBase64url(dbCred.credentialID),
-    //   credentialPublicKey: fromBase64url(dbCred.publicKey),
-    //   counter: dbCred.counter ?? 0,
-    // },
-  });
+//     // authenticator: {
+//     //   credentialID: fromBase64url(dbCred.credentialID),
+//     //   credentialPublicKey: fromBase64url(dbCred.publicKey),
+//     //   counter: dbCred.counter ?? 0,
+//     // },
+//   });
 
-  if (verification.verified) {
-    await updateCredentialCounter(
-      dbCred.credentialID,
-      verification.authenticationInfo.newCounter
-    );
-    await updateUserChallenge(user.email, null);
-  }
+//   if (verification.verified) {
+//     await updateCredentialCounter(
+//       dbCred.credentialID,
+//       verification.authenticationInfo.newCounter
+//     );
+//     await updateUserChallenge(user.email, null);
+//   }
 
-  return verification.verified;
-}
+//   return verification.verified;
+// }
