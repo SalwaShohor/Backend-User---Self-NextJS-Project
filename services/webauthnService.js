@@ -20,16 +20,16 @@ const rpID = process.env.WEBAUTHN_RPID;
 const origin = process.env.WEBAUTHN_ORIGIN;
 
 // A helper function to convert Buffer to Base64URL string
-const toBase64url = (buf) => {
-    return buf.toString("base64url");
-};
 // const toBase64url = (buf) => {
-//   return buf
-//     .toString("base64")
-//     .replace(/\+/g, "-")
-//     .replace(/\//g, "_")
-//     .replace(/=/g, "");
+//   return buf.toString("base64");
 // };
+const toBase64url = (buf) => {
+  return buf
+    .toString("base64")
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=/g, "");
+};
 
 /**
  * Generate Registration Options
@@ -61,7 +61,6 @@ export async function generateAndStoreRegisterOptions(user) {
     },
   };
 }
-
 
 /**
  * Verify Registration Response
@@ -96,13 +95,12 @@ export async function verifyRegisterResponse(user, attestationResponse) {
     // publicKey,
     counter
   );
+  console.log(publicKey);
 
   await updateUserChallenge(user.email, null);
 
   return true;
 }
-
-
 
 /**
  * Generate Authentication Options (Login)
@@ -190,7 +188,10 @@ export async function verifyLoginResponse(user, loginResp) {
   if (!dbCred) {
     console.error("❌ No matching credential found.");
     console.error("Client sent:", loginResp.id);
-    console.error("Stored:", user.credentials.map((c) => c.credentialID));
+    console.error(
+      "Stored:",
+      user.credentials.map((c) => c.credentialID)
+    );
     throw new Error("Authenticator not registered");
   }
 
@@ -210,7 +211,7 @@ export async function verifyLoginResponse(user, loginResp) {
   if (verification.verified) {
     await updateCredentialCounter(
       dbCred.credentialID,
-      verification.authenticationInfo.newCounter,
+      verification.authenticationInfo.newCounter
     );
     await updateUserChallenge(user.email, null);
   }
