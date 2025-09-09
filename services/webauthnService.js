@@ -9,6 +9,7 @@ import { PrismaClient } from "@prisma/client";
 import { updateUser, updateUserChallenge } from "../models/users.js";
 import { addCredential } from "../models/credential.js";
 import { fromBase64url } from "../utils/base64.js";
+import base64url from "base64url";
 
 const prisma = new PrismaClient();
 
@@ -88,16 +89,18 @@ export async function verifyRegisterResponse(user, attestationResponse) {
   const { id, publicKey, counter } = credential;
 
   // Store as Base64URL — ensure addCredential signature matches (userId, credentialID, publicKey, counter)
-// Convert the Buffer to a Base64URL string and store it
-const encodedPublicKey = toBase64url(publicKey);
+  // Convert the Buffer to a Base64URL string and store it
+  // const encodedPublicKey = toBase64url(publicKey);
 
-// Pass the encoded string to the addCredential function
-await addCredential(
-  user.id,
-  id,
-  encodedPublicKey, // Use the new variable
-  counter
-);
+  const encodedPublicKey = base64url.encode(publicKey); // Buffer → base64url string
+
+  // Pass the encoded string to the addCredential function
+  await addCredential(
+    user.id,
+    id,
+    encodedPublicKey, // Use the new variable
+    counter
+  );
   console.log(publicKey);
 
   await updateUserChallenge(user.email, null);
