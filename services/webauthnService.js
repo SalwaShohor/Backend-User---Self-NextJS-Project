@@ -158,10 +158,10 @@ export async function verifyLoginResponse(user, loginResp) {
       expectedOrigin: process.env.WEBAUTHN_ORIGIN,
       expectedRPID: process.env.WEBAUTHN_RPID,
       authenticator: {
-        credentialID: base64url.encode(dbCred.credentialID),
+        credentialID: base64url.toBuffer(dbCred.credentialID),
         // credentialID: fromBase64url(dbCred.credentialID), // ✅ fix here
         // credentialPublicKey: fromBase64url(dbCred.publicKey),
-        credentialPublicKey: base64url.encode(dbCred.publicKey),
+        credentialPublicKey: base64url.toBuffer(dbCred.publicKey),
         counter: dbCred.counter ?? 0,
       },
     });
