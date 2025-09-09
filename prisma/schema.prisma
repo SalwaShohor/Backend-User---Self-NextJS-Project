@@ -8,31 +8,31 @@ datasource db {
 }
 
 model credentials {
-  id           Int    @id @default(autoincrement())
-  credentialID String
-  publicKey    String @db.Text 
-  counter      Int?   @default(0)
-  user_id      Int?
-  users        users? @relation("UserCredentials", fields: [user_id], references: [id], onDelete: Cascade)
+  id           Int     @id @default(autoincrement())
+  credentialID String  @unique
+  publicKey    String  @db.Text
+  counter      Int     @default(0) // counter should always have a value
+  user_id      Int     // user_id is now required
+  users        users   @relation("UserCredentials", fields: [user_id], references: [id], onDelete: Cascade)
 
   @@index([user_id])
 }
 
 model users {
-  id               Int           @id @default(autoincrement())
+  id               Int          @id @default(autoincrement())
   full_name        String
-  email            String        @unique
+  email            String       @unique
   password         String
-  role             String?       @default("user")
-  currentChallenge String?       @map("current_challenge")
-  created_at       DateTime?     @default(now())
-  updated_at       DateTime?     @updatedAt
+  role             String?      @default("user")
+  currentChallenge String?      @map("current_challenge")
+  created_at       DateTime?    @default(now())
+  updated_at       DateTime?    @updatedAt
   credentials      credentials[] @relation("UserCredentials")
 }
 
 model target {
-  id              Int       @id @default(autoincrement())
-  ic_number       String    @unique
+  id              Int        @id @default(autoincrement())
+  ic_number       String     @unique
   full_name       String
   age             Int?
   birth_date      DateTime?
