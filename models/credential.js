@@ -33,20 +33,21 @@ function toBase64url(buffer) {
 // }
 
 // Save new credential after registration
+// Save new credential after registration
 export async function addCredential(
-  userId,
-  credentialID, // already Base64URL string
-  publicKey,    // Buffer
-  counter = 0
-) {
-  return await prisma.credentials.create({
-    data: {
-      credentialID,                  // ✅ store as-is
-      publicKey, // ✅ encode Buffer → Base64URL
-      counter,
-      user_id: userId,
-    },
-  });
+    userId,
+    credentialID,
+    publicKey,    // Buffer
+    counter = 0
+  ) {
+    return await prisma.credentials.create({
+      data: {
+        credentialID,
+        publicKey: toBase64url(publicKey), // 🐛 Fix is here!
+        counter,
+        user_id: userId,
+      },
+    });
 }
 
 // Find credential for login verification
