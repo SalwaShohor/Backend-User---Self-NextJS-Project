@@ -89,8 +89,8 @@ export async function verifyRegisterResponse(user, attestationResponse) {
   await addCredential(
     user.id,
     id, // already base64url string from @simplewebauthn
-    // toBase64url(publicKey), // convert Buffer -> base64url
-    publicKey,
+    toBase64url(publicKey), // convert Buffer -> base64url
+    // publicKey,
     counter
   );
 
