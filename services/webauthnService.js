@@ -7,7 +7,11 @@ import {
 import { PrismaClient } from "@prisma/client";
 
 import { updateUser, updateUserChallenge } from "../models/users.js";
-import { addCredential } from "../models/credential.js";
+import {
+  addCredential,
+  updateCredentialCounter,
+  findCredentialByCredentialID,
+} from "../models/credential.js";
 import { fromBase64url } from "../utils/base64.js";
 import base64url from "base64url";
 
@@ -151,6 +155,19 @@ export async function verifyLoginResponse(user, loginResp) {
     throw new Error("Authenticator not registered");
   }
 
+  // ✅ Build authenticator with Buffers
+  const authenticator = {
+    credentialID: Buffer.from(fromBase64url(dbCred.credentialID)),
+    credentialPublicKey: Buffer.from(fromBase64url(dbCred.publicKey)),
+    counter: dbCred.counter ?? 0,
+  };
+
+  console.log("🔑 Authenticator object:", {
+    credentialID: authenticator.credentialID,
+    credentialPublicKey: authenticator.credentialPublicKey,
+    counter: authenticator.counter,
+  });
+
   console.log("Client sent:", loginResp.id);
   console.log(
     "Stored credentials:",
@@ -163,13 +180,14 @@ export async function verifyLoginResponse(user, loginResp) {
       expectedChallenge,
       expectedOrigin: process.env.WEBAUTHN_ORIGIN,
       expectedRPID: process.env.WEBAUTHN_RPID,
-      authenticator: {
-        credentialID: base64url.toBuffer(dbCred.credentialID),
-        // credentialID: fromBase64url(dbCred.credentialID), // ✅ fix here
-        // credentialPublicKey: fromBase64url(dbCred.publicKey),
-        credentialPublicKey: base64url.toBuffer(dbCred.publicKey),
-        counter: dbCred.counter ?? 0,
-      },
+      authenticator,
+      // authenticator: {
+      //   credentialID: base64url.toBuffer(dbCred.credentialID),
+      //   // credentialID: fromBase64url(dbCred.credentialID), // ✅ fix here
+      //   // credentialPublicKey: fromBase64url(dbCred.publicKey),
+      //   credentialPublicKey: base64url.toBuffer(dbCred.publicKey),
+      //   counter: dbCred.counter ?? 0,
+      // },
     });
 
     console.log("✅ Verification result:", verification);
