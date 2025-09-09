@@ -21,12 +21,15 @@ const origin = process.env.WEBAUTHN_ORIGIN;
 
 // A helper function to convert Buffer to Base64URL string
 const toBase64url = (buf) => {
-  return buf
-    .toString("base64")
-    .replace(/\+/g, "-")
-    .replace(/\//g, "_")
-    .replace(/=/g, "");
+    return buf.toString("base64url");
 };
+// const toBase64url = (buf) => {
+//   return buf
+//     .toString("base64")
+//     .replace(/\+/g, "-")
+//     .replace(/\//g, "_")
+//     .replace(/=/g, "");
+// };
 
 /**
  * Generate Registration Options
