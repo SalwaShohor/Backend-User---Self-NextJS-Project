@@ -151,6 +151,12 @@ export async function verifyLoginResponse(user, loginResp) {
     throw new Error("Authenticator not registered");
   }
 
+  console.log("Client sent:", loginResp.id);
+  console.log(
+    "Stored credentials:",
+    user.credentials.map((c) => c.credentialID)
+  );
+
   try {
     const verification = await verifyAuthenticationResponse({
       response: loginResp,
