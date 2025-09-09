@@ -35,25 +35,26 @@ function toBase64url(buffer) {
 // Save new credential after registration
 // Save new credential after registration
 export async function addCredential(
-    userId,
-    credentialID,
-    publicKey,    // Buffer
-    counter = 0
-  ) {
-    return await prisma.credentials.create({
-      data: {
-        credentialID,
-        publicKey: toBase64url(publicKey), // 🐛 Fix is here!
-        counter,
-        user_id: userId,
-      },
-    });
+  userId,
+  credentialID,
+  publicKey, // Buffer
+  counter = 0
+) {
+  return await prisma.credentials.create({
+    data: {
+      credentialID,
+      // publicKey: toBase64url(publicKey), // 🐛 Fix is here!
+      publicKey,
+      counter,
+      user_id: userId,
+    },
+  });
 }
 
 // Find credential for login verification
 export async function findCredentialByCredentialID(credentialID) {
   return await prisma.credentials.findUnique({
-    where: { 
+    where: {
       credentialID, // ✅ no conversion, it’s already base64url from client
     },
   });
@@ -62,13 +63,12 @@ export async function findCredentialByCredentialID(credentialID) {
 // Update signature counter
 export async function updateCredentialCounter(credentialID, newCounter) {
   return await prisma.credentials.update({
-    where: { 
+    where: {
       credentialID, // ✅ no conversion
     },
     data: { counter: newCounter },
   });
 }
-
 
 // import { PrismaClient } from "@prisma/client";
 
