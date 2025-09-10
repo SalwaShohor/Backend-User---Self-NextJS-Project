@@ -21,7 +21,7 @@ Content-Type: application/json
 
 
 ### Test WebAuthn Register Options
-POST https://backend-user-ht4p.onrender.com/auth/register-options
+POST https://backend-user-self-nextjs-project-production.up.railway.app/auth/register-options
 Content-Type: application/json
 
 {
