@@ -180,14 +180,11 @@ export async function verifyLoginResponse(user, loginResp) {
       expectedChallenge,
       expectedOrigin: process.env.WEBAUTHN_ORIGIN,
       expectedRPID: process.env.WEBAUTHN_RPID,
-      authenticator,
-      // authenticator: {
-      //   credentialID: base64url.toBuffer(dbCred.credentialID),
-      //   // credentialID: fromBase64url(dbCred.credentialID), // ✅ fix here
-      //   // credentialPublicKey: fromBase64url(dbCred.publicKey),
-      //   credentialPublicKey: base64url.toBuffer(dbCred.publicKey),
-      //   counter: dbCred.counter ?? 0,
-      // },
+      credential: {
+        id: dbCred.credentialID, // string, not Buffer
+        publicKey: base64url.toBuffer(dbCred.publicKey), // Buffer
+        counter: dbCred.counter ?? 0, // number
+      },
     });
 
     console.log("✅ Verification result:", verification);
