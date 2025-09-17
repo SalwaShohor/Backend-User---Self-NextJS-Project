@@ -28,13 +28,7 @@ const origin = process.env.WEBAUTHN_ORIGIN;
 const toBase64url = (buf) => {
   return buf.toString("base64url");
 };
-// const toBase64url = (buf) => {
-//   return buf
-//     .toString("base64")
-//     .replace(/\+/g, "-")
-//     .replace(/\//g, "_")
-//     .replace(/=/g, "");
-// };
+
 
 /**
  * Generate Registration Options
