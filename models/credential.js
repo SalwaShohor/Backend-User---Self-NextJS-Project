@@ -54,7 +54,7 @@ export async function addCredential(
 export async function findCredentialByCredentialID(credentialID) {
   return await prisma.credentials.findUnique({
     where: {
-      credentialID, // ✅ no conversion, it’s already base64url from client
+      credential_id: credentialID, // ✅ no conversion, it’s already base64url from client
     },
   });
 }
@@ -63,7 +63,7 @@ export async function findCredentialByCredentialID(credentialID) {
 export async function updateCredentialCounter(credentialID, newCounter) {
   return await prisma.credentials.update({
     where: {
-      credentialID, // ✅ no conversion
+      credential_id: credentialID, // ✅ no conversion
     },
     data: { counter: newCounter },
   });
