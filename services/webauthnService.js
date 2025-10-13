@@ -29,7 +29,6 @@ const toBase64url = (buf) => {
   return buf.toString("base64url");
 };
 
-
 /**
  * Generate Registration Options
  */
@@ -118,7 +117,7 @@ export async function generateAndStoreLoginOptions(user) {
   return {
     challenge: challengeStr,
     allowCredentials: user.credentials.map((c) => ({
-      id: c.credentialID, // already stored as base64url → don’t re-encode
+      // id: c.credentialID, // already stored as base64url → don’t re-encode
       type: "public-key",
     })),
     timeout: 60000,
