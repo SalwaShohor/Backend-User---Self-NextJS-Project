@@ -117,7 +117,7 @@ export async function generateAndStoreLoginOptions(user) {
   return {
     challenge: challengeStr,
     allowCredentials: user.credentials.map((c) => ({
-      // id: c.credentialID, // already stored as base64url → don’t re-encode
+      id: c.credential_id, // already stored as base64url → don’t re-encode
       type: "public-key",
     })),
     timeout: 60000,
@@ -136,14 +136,14 @@ export async function verifyLoginResponse(user, loginResp) {
     throw new Error("A challenge was not found. Please try logging in again.");
   }
 
-  const dbCred = user.credentials.find((c) => c.credentialID === loginResp.id);
+  const dbCred = user.credentials.find((c) => c.credential_id === loginResp.id);
 
   if (!dbCred) {
     console.error("❌ No matching credential found.");
     console.error("Client sent:", loginResp.id);
     console.error(
       "Stored credentials:",
-      user.credentials.map((c) => c.credentialID)
+      user.credentials.map((c) => c.credential_id)
     );
     throw new Error("Authenticator not registered");
   }
@@ -164,7 +164,7 @@ export async function verifyLoginResponse(user, loginResp) {
   console.log("Client sent:", loginResp.id);
   console.log(
     "Stored credentials:",
-    user.credentials.map((c) => c.credentialID)
+    user.credentials.map((c) => c.credential_id)
   );
 
   try {
