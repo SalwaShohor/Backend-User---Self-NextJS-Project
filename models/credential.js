@@ -15,7 +15,7 @@ export async function addCredential(
 ) {
   return await prisma.credentials.create({
     data: {
-      credential_id: credentialID,
+      credentialID,
       public_key: publicKeyString,
       counter,
       user_id: userId,
@@ -27,7 +27,7 @@ export async function addCredential(
 export async function findCredentialByCredentialID(credentialID) {
   return await prisma.credentials.findUnique({
     where: {
-      credential_id: credentialID,
+      credentialID,
     },
   });
 }
@@ -36,7 +36,7 @@ export async function findCredentialByCredentialID(credentialID) {
 export async function updateCredentialCounter(credentialID, newCounter) {
   return await prisma.credentials.update({
     where: {
-      credential_id: credentialID,
+      credentialID,
     },
     data: { counter: newCounter },
   });
