@@ -10,15 +10,15 @@ function toBase64url(buffer) {
 export async function addCredential(
   userId,
   credentialID,
-  publicKey, // Buffer
+  publicKeyString, // Buffer
   counter = 0
 ) {
   return await prisma.credentials.create({
     data: {
       credentialID,
-      publicKey,
+      public_key: publicKeyString,
       counter,
-      userId,
+      user_id: userId,
     },
   });
 }
