@@ -15,7 +15,7 @@ export async function addCredential(
 ) {
   return await prisma.credentials.create({
     data: {
-      credentialID,
+      credential_id: credentialID,
       public_key: publicKey,
       counter,
       user_id: userId,
