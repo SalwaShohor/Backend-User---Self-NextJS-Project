@@ -15,7 +15,6 @@ import {
   getAllUsers,
   updateUserChallenge,
 } from "../models/users.js";
-import { generateJWT } from "../utils/jwt.js";
 import { addCredential } from "../models/credential.js";
 // import { updateUser } from "../services/userService.js";
 
