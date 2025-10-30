@@ -15,6 +15,7 @@ import {
   getAllUsers,
   updateUserChallenge,
 } from "../models/users.js";
+import bcrypt from "bcryptjs";
 import { addCredential } from "../models/credential.js";
 // import { updateUser } from "../services/userService.js";
 
@@ -22,6 +23,31 @@ function handleControllerError(res, err) {
   console.error("Controller error:", err);
   const msg = err?.message || "Internal Server Error";
   res.status(500).json({ error: msg });
+}
+
+export async function prelogin(req, res) {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({ error: "Email and password are required" });
+    }
+
+    const user = await findUserByEmail(email);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const passwordMatch = await bcrypt.compare(password, user.password);
+    if (!passwordMatch) {
+      return res.status(401).json({ error: "Invalid password" });
+    }
+
+    return res.json({ ok: true });
+  } catch (err) {
+    console.error("prelogin error:", err);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
 }
 
 // Handles WebAuthn registration options and hashes the password
