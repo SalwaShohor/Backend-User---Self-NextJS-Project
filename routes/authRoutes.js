@@ -6,7 +6,9 @@ import {
   loginVerify,
   handleGetAllUsers,
   updateUserController,
+  getUserProfile,
 } from "../controllers/authController.js";
+import { authenticateJWT } from "../middleware/authMiddleware.js";
 // import { findUserByEmail, getAllUsers, } from "../models/users.js";
 
 const router = express.Router();
@@ -18,5 +20,7 @@ router.post("/login-verify", loginVerify);
 router.get("/all-users", handleGetAllUsers);
 // PUT /users/:id
 router.put("/users/:id", updateUserController);
+
+router.get("/users/profile", authenticateJWT, getUserProfile);
 
 export default router;

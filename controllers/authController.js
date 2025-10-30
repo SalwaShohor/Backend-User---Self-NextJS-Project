@@ -15,6 +15,7 @@ import {
   getAllUsers,
   updateUserChallenge,
 } from "../models/users.js";
+import { generateJWT } from "../utils/jwt.js";
 import { addCredential } from "../models/credential.js";
 // import { updateUser } from "../services/userService.js";
 
@@ -162,5 +163,16 @@ export async function updateUserController(req, res) {
   } catch (err) {
     console.error("Update user error:", err);
     res.status(500).json({ error: "Internal Server Error" });
+  }
+}
+
+export async function getUserProfile(req, res) {
+  try {
+    // req.user comes from decoded JWT
+    const { id, email, role } = req.user;
+    return res.json({ id, email, role });
+  } catch (err) {
+    console.error("Get user profile error:", err);
+    return res.status(500).json({ error: "Internal Server Error" });
   }
 }

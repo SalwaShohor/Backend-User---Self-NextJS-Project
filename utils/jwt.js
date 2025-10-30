@@ -1,25 +1,33 @@
 import jwt from "jsonwebtoken";
 
-// JWT Creation
+const JWT_SECRET = process.env.JWT_SECRET || "supersecret123";
+const JWT_EXPIRES_IN = "5m";
+
+/**
+ *
+ * Generate a JWT for the authenticated user.
+ */
 
 export function generateJWT(user) {
   return jwt.sign(
-    /*
-        Payload - { id: user._id, username: user.username }: This is the 
-        data that will be encoded in the token. It extracts the user's ID 
-        and username from the user object.
-    */
-    { id: user._id, username: user.username },
-
-    /*
-        Secret Key - process.env.JWT_SECRET: This is the secret key used 
-        to sign the token, stored as an environment variable for security.
-    */
-    process.env.JWT_SECRET,
-
-    /*
-        Options - { expiresIn: "1h" }: This sets the token to expire after 1 hour.
-    */
-    { expiresIn: "1h" }
+    {
+      id: user.id,
+      email: user.email,
+      role: user.role,
+    },
+    JWT_SECRET,
+    { expiresIn: JWT_EXPIRES_IN }
   );
+}
+
+/**
+ * Verify JWT Token
+ */
+export function verifyJWT(token) {
+  try {
+    return jwt.verify(token, JWT_SECRET);
+  } catch (error) {
+    console.error("Invalid token: ", error.message);
+    return null;
+  }
 }
