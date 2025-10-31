@@ -201,3 +201,31 @@ export async function getUserProfile(req, res) {
     return res.status(500).json({ error: "Internal Server Error" });
   }
 }
+
+// Simple in-memory blacklist (you can use Redis in production)
+const tokenBlacklist = new Set();
+
+export async function logout(req, res) {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader)
+      return res.status(400).json({ error: "No token provided" });
+
+    const token = authHeader.split(" ")[1];
+    tokenBlacklist.add(token);
+
+    return res.json({ success: true, message: "Logged out successfully" });
+  } catch (err) {
+    console.error("Logout error:", err);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+}
+
+// Middleware to reject blacklisted tokens
+export function checkBlacklist(req, res, next) {
+  const token = req.headers.authorization?.split(" ")[1];
+  if (token && tokenBlacklist.has(token)) {
+    return res.status(401).json({ error: "Token has been invalidated" });
+  }
+  next();
+}
